@@ -3,6 +3,8 @@ import hashlib
 import sys
 import getpass
 import os.path
+import argparse
+
 
 def request_api_data(query_char):
     url = "https://api.pwnedpasswords.com/range/" + query_char
@@ -47,13 +49,18 @@ def main(args):
     else:
         passwords_to_check = args
 
-    for password in passwords_to_check:
-        count = pwned_api_check(password)
-        if count:
-            print(f'{password} was found {count} times...you should change your password')
-        else:
-            print(f'{password} was NOT found.')
-    return 'done!'
+    with open('audit_results.txt', 'w', encoding="utf-8") as output_file:
+        for password in passwords_to_check:
+            count = pwned_api_check(password)
+            if count:
+                result = f'{password} was found {count} times...you should change your password'
+            else:
+                result = f'{password} was NOT found.'
+
+            print(result)
+            output_file.write(result + '\n')
+        return 'done!'
+
 
 
 
