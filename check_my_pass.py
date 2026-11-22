@@ -1,9 +1,10 @@
+import argparse
 import requests
 import hashlib
 import sys
 import getpass
 import os.path
-import argparse
+
 
 
 def request_api_data(query_char):
@@ -31,15 +32,15 @@ def main(args):
     passwords_to_check = []
 
     # Case 1 - When no arguments are passed, prompt, then mask what's entered
-    if not args:
+    if not args.passwords:
         # Prompt the user securely
         users_input = getpass.getpass('Enter password to check: ')
         if users_input:
             passwords_to_check.append(users_input)
 
     # Case 2 - One argument passed, and it matches a file on disk
-    elif len(args) == 1 and os.path.isfile(args[0]):
-        file_path = args[0]
+    elif len(args.passwords) == 1 and os.path.isfile(args.passwords[0]):
+        file_path = args.passwords[0]
         print(f"[*] Reading passwords from file: {file_path}")
         with open(file_path, 'r', encoding="utf-8") as f:
             # .strip() removes trailing newlines and carriage returns
@@ -65,7 +66,16 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    parser = argparse.ArgumentParser(description="Check if passwords have been breached")
+
+    parser.add_argument("passwords", nargs='*', help="List of passwords to check")
+
+    args = parser.parse_args()
+
+    sys.exit(main(args))
+
+
+
 
 
 
