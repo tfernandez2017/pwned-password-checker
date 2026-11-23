@@ -69,6 +69,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Check if passwords have been breached")
 
     parser.add_argument("passwords", nargs='*', help="List of passwords to check")
+    parser.add_argument('V', '--version', action='version', version='%(prog)s 1.0.0')
+
 
     args = parser.parse_args()
 
