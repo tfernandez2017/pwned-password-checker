@@ -31,26 +31,27 @@ def pwned_api_check(password):
 def main(args):
     passwords_to_check = []
 
-    # Case 1 - When no arguments are passed, prompt, then mask what's entered
-    if not args.passwords:
-        # Prompt the user securely
-        users_input = getpass.getpass('Enter password to check: ')
+    # File flag passed (-f / file)
+    if args.file:
+        file_path = args.file
+        if not os.path.isfile(file_path):
+            print(f" [!] Error: File '{file_path}' not found.")
+            return 1
+        print(f"[*] Reading passwords from file: {file_path}")
+        with open(file_path, 'r', encoding="utf-8") as f:
+            passwords_to_check = [line.strip() for line in f if line.strip()]
+
+    # Case 2 - Standard command line arguments passed directly
+    elif args.passwords:
+        passwords_to_check = args.passwords
+
+    # Case 3 No file or passwords passed, prompt and mask what's entered
+    else:
+        users_input = getpass.getpass(prompt='Enter password to check: ')
         if users_input:
             passwords_to_check.append(users_input)
 
-    # Case 2 - One argument passed, and it matches a file on disk
-    elif len(args.passwords) == 1 and os.path.isfile(args.passwords[0]):
-        file_path = args.passwords[0]
-        print(f"[*] Reading passwords from file: {file_path}")
-        with open(file_path, 'r', encoding="utf-8") as f:
-            # .strip() removes trailing newlines and carriage returns
-            passwords_to_check = [line.strip() for line in f if line.strip()]
-
-    # Case 3 Standard command line arguments
-    else:
-        passwords_to_check = args
-
-    with open('audit_results.txt', 'w', encoding="utf-8") as output_file:
+    with open(args.output, 'w', encoding="utf-8") as output_file:
         for password in passwords_to_check:
             count = pwned_api_check(password)
             if count:
@@ -60,7 +61,7 @@ def main(args):
 
             print(result)
             output_file.write(result + '\n')
-        return 'done!'
+        return 0
 
 
 
@@ -69,7 +70,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Check if passwords have been breached")
 
     parser.add_argument("passwords", nargs='*', help="List of passwords to check")
-    parser.add_argument('V', '--version', action='version', version='%(prog)s 1.0.0')
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s 1.0.0', help='version number')
+    parser.add_argument('--verbose', '-v', action='store_true', help='verbose output')
+    parser.add_argument('-f', '--file', )
+    parser.add_argument('-o', '--output', default='audit_results.txt')
 
 
     args = parser.parse_args()
